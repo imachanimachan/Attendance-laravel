@@ -1,0 +1,74 @@
+.top-header {
+	width: 100%;
+	background-color: black;
+}
+
+.top-header__inner {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px;
+}
+
+.top-header__logo-img {
+	height: 40px;
+}
+
+.top-header__search-form {
+	flex: 1;
+	margin: 0 24px;
+}
+
+.top-header__search-input {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 16px;
+}
+
+.top-header__nav-list {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+/* ログイン・マイページ・ログアウト共通ボタン風 */
+.top-header__nav-item,
+.top-header__nav-link {
+	background-color: black;
+	color: white;
+	padding: 8px 16px;
+	border-radius: 4px;
+	text-decoration: none;
+	font-weight: 500;
+	display: inline-block;
+	border: none;
+	cursor: pointer;
+	font: inherit;
+}
+
+/* 出品リンク専用スタイル（白ボタン風） */
+.top-header__nav-item--white {
+	background-color: white;
+	color: black;
+	text-decoration: none;
+	border: 1px solid black;
+	padding: 5px 10px;
+	border-radius: 4px;
+}
+
+.main-content {
+	padding: 24px;
+}
+
+@media screen and (min-width: 1400px) {
+	.top-header__inner {
+		max-width: 1400px;
+	}
+}

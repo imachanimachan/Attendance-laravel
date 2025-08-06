@@ -1,0 +1,81 @@
+.attendance-detail {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	padding: 60px 0;
+	background-color: #f2f2f4;
+}
+
+.attendance-detail__container {
+	width: 900px;
+	background-color: #fff;
+	border-radius: 12px;
+	padding: 40px 50px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-detail__title {
+	font-size: 24px;
+	font-weight: bold;
+	margin-bottom: 32px;
+	border-left: 4px solid #000;
+	padding-left: 10px;
+}
+
+.attendance-detail__table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.attendance-detail__row {
+	border-top: 1px solid #ddd;
+	height: 60px;
+}
+
+.attendance-detail__header {
+	width: 30%;
+	text-align: left;
+	font-weight: bold;
+	background-color: #fafafa;
+	padding-left: 16px;
+	font-size: 15px;
+}
+
+.attendance-detail__data {
+	padding-left: 16px;
+	font-size: 15px;
+}
+
+.attendance-detail__button-wrapper {
+	text-align: right;
+	margin-top: 30px;
+}
+
+.attendance-detail__button {
+	display: inline-block;
+	background-color: #000;
+	color: #fff;
+	padding: 10px 30px;
+	text-align: center;
+	border-radius: 4px;
+	text-decoration: none;
+	transition: background-color 0.3s ease;
+}
+
+.attendance-detail__button:hover {
+	background-color: #333;
+}
+
+.attendance-detail__input {
+	width: 70px;
+}
+
+.attendance-detail__input--note {
+	height: 40px;
+	width: 250px;
+}
+
+.flash-message {
+	color: rgb(241, 110, 110);
+	font-size: large;
+}
