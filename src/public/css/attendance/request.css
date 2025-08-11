@@ -1,74 +1,58 @@
 .attendance-request__container {
-	width: 80%;
-	max-width: 1200px;
-	margin: 0 auto;
+	width: 70%;
+	margin: 70px auto;
 }
 
 .attendance-request__title {
-	font-size: 20px;
+	font-size: 24px;
 	font-weight: bold;
 	margin-bottom: 20px;
+	border-left: 5px solid #000;
+	padding-left: 12px;
 }
 
 .attendance-request__tabs {
 	display: flex;
 	border-bottom: 1px solid #333;
-	margin-bottom: 20px;
+	margin-bottom: 50px;
 }
 
-.attendance-request__tab {
+.attendance-request__tab-link {
 	padding: 10px 20px;
 	cursor: pointer;
-	font-weight: bold;
 	color: #333;
     text-decoration: none;
 }
 
 .attendance-request__tab-link--active {
-	font-weight: 400px;
-}
-
-.attendance-request__tab-link:hover {
-    color: #484747;
-}
-
-.attendance-request__table-wrapper {
-	background-color: #fff;
-	border-radius: 5px;
-	padding: 10px;
-	overflow-x: auto;
+	font-weight: bold;
 }
 
 .attendance-request__table {
 	width: 100%;
-	border-collapse: collapse;
-}
-
-.attendance-request__thead {
-	background-color: #f9f9f9;
-}
-
-.attendance-request__header-row {
+	background-color: white;
+	border-radius: 10px;
 }
 
 .attendance-request__header {
 	text-align: left;
 	padding: 12px;
 	font-weight: bold;
-	border-bottom: 1px solid #ccc;
-}
-
-.attendance-request__row {
+	border-bottom: 2px solid #ccc;
+	color: #706d6d;
 }
 
 .attendance-request__cell {
 	padding: 12px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #ccc;
 	font-size: 14px;
+	font-weight: bold;
+	color: #706d6d;
 }
 
 .attendance-request__link {
 	color: #333;
 	text-decoration: underline;
 	font-weight: bold;
+	text-decoration: none;
 }

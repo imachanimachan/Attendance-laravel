@@ -68,7 +68,9 @@ class AdminController extends Controller
     {
         $attendance = Attendance::with(['breaks', 'user'])->find($id);
 
-        return view('admin.show', compact('attendance'));
+        $attendanceRevision = AttendanceRevision::where('attendance_id', $attendance->id)->first();
+
+        return view('admin.show', compact('attendance', 'attendanceRevision'));
     }
 
     public function request($id, Request $request)
@@ -225,12 +227,8 @@ class AdminController extends Controller
 
         }catch(\Exception $e){
         DB::rollBack();
-        // ログ出力（エラー内容、スタックトレース含む）
-            Log::error('勤怠修正エラー', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            return redirect()->back()->with('message', '修正に失敗しました。')->withInput();;
+
+        return redirect()->back()->with('message', '修正に失敗しました。')->withInput();;
         }
     }
 
@@ -240,7 +238,69 @@ class AdminController extends Controller
                     return $a->eq($b);
                 }
 
-    public function export(Request $request) :StreamedResponse
+    public function listUsers()
+    {
+        $users = User::all();
+        return view('admin.users', compact('users'));
+    }
+
+    public function showUserAttendances(Request $request, $id)
+    {
+        $user = User::find($id);
+
+        $year = $request->input('year') ?? date('Y');
+        $month = $request->input('month') ?? date('m');
+
+        $displayYear = (int)$year;
+        $displayMonth = (int)$month;
+
+        $startDate = Carbon::create($displayYear, $displayMonth, 1)->startOfDay();
+        $endDate = $startDate->copy()->endOfMonth()->endOfDay();
+
+        // 勤怠データを取得
+        $attendancesRaw = Attendance::with('breaks')
+            ->where('user_id', $user->id)
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get();
+
+        // 勤怠を日付でマップ（キー：日付のY-m-d形式）
+        $attendanceMap = $attendancesRaw->keyBy(function ($item) {
+            return Carbon::parse($item->date)->format('Y-m-d');
+        });
+
+        // 月の全日付を作成
+        $daysInMonth = [];
+        $current = $startDate->copy();
+        while ($current->lte($endDate)) {
+            $dateKey = $current->format('Y-m-d');
+            $daysInMonth[] = [
+                'date' => $current->copy(),
+                'attendance' => $attendanceMap[$dateKey] ?? null,
+            ];
+            $current->addDay();
+        }
+
+        $prevMonthDate = $startDate->copy()->subMonth();
+        $nextMonthDate = $startDate->copy()->addMonth();
+
+        $prevYear = $prevMonthDate->year;
+        $prevMonth = $prevMonthDate->month;
+
+        $nextYear = $nextMonthDate->year;
+        $nextMonth = $nextMonthDate->month;
+
+        return view('admin.user_attendance', compact(
+            'user',
+            'daysInMonth', // ← 変更点：これがviewで使う配列
+            'displayYear',
+            'displayMonth',
+            'prevYear',
+            'prevMonth',
+            'nextYear',
+            'nextMonth'
+        ));
+    }
+        public function export(Request $request) :StreamedResponse
     {
         $request->validate([
             'user_id' => ['required', 'integer'],
@@ -266,33 +326,38 @@ class AdminController extends Controller
         ];
 
         $callback = function () use ($attendances, $headers, $year, $month, $user) {
-            $output = fopen('php://output', 'w');
-            fwrite($output, "\xEF\xBB\xBF");
-            fwrite($output, "{$year}年{$month}月分{$user->name}さんの勤怠\n");
-            fwrite($output, "\n");
-            fputcsv($output, $headers);
+        $output = fopen('php://output', 'w');
+        fwrite($output, "\xEF\xBB\xBF");
+        fwrite($output, "{$year}年{$month}月分{$user->name}さんの勤怠\n");
+        fwrite($output, "\n");
+        fputcsv($output, $headers);
 
-            foreach ($attendances as $attendance) {
-                $clockIn = $attendance->clock_in ? Carbon::parse($attendance->clock_in)->format('H:i') : '';
-                $clockOut = $attendance->clock_out ? Carbon::parse($attendance->clock_out)->format('H:i') : '';
+        foreach ($attendances as $attendance) {
+            $clockIn = $attendance->clock_in ? Carbon::parse($attendance->clock_in)->format('H:i') : '';
+            $clockOut = $attendance->clock_out ? Carbon::parse($attendance->clock_out)->format('H:i') : '';
 
-                $breakMinutes = $attendance->breaks->sum('total_break_time');
-                $breakDisplay = sprintf('%d:%02d', floor($breakMinutes / 60), $breakMinutes % 60);
+            $breakMinutes = $attendance->breaks->sum('total_break_time');
+            $breakDisplay = sprintf('%d:%02d', floor($breakMinutes / 60), $breakMinutes % 60);
 
-                $workMinutes = $attendance->total_work_time ?? 0;
-                $workDisplay = $workMinutes > 0 ? sprintf('%d:%02d', floor($workMinutes / 60), $workMinutes % 60) : '';
+            $workMinutes = $attendance->total_work_time ?? 0;
+            $workDisplay = $workMinutes > 0 ? sprintf('%d:%02d', floor($workMinutes / 60), $workMinutes % 60) : '';
 
-                fputcsv($output, [
-                    "\t" . Carbon::parse($attendance->date)->format('Y/m/d'),
-                    $clockIn,
-                    $clockOut,
-                    $breakDisplay,
-                    $workDisplay,
-                ]);
-            }
+            $daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+            $date = Carbon::parse($attendance->date);
+            $formattedDate = $date->format('Y/m/d') . '（' . $daysOfWeek[$date->dayOfWeek] . '）';
 
-            fclose($output);
-        };
+            fputcsv($output, [
+                "\t" . $formattedDate,
+                $clockIn,
+                $clockOut,
+                $breakDisplay,
+                $workDisplay,
+            ]);
+        }
+
+        fclose($output);
+    };
+
 
         $filename = "attendance_{$userId}_{$year}_{$month}.csv";
 
@@ -301,59 +366,12 @@ class AdminController extends Controller
         ]);
     }
 
-    public function listUsers()
-    {
-        $users = User::all();
-        return view('admin.users', compact('users'));
-    }
-
-    public function showUserAttendances(Request $request, $id)
-    {
-        $user = User::find($id);
-
-        $year = $request->input('year') ?? date('Y');
-        $month = $request->input('month') ?? date('m');
-
-        $displayYear = (int)$year;
-        $displayMonth = (int)$month;
-
-        $startDate = Carbon::create($displayYear, $displayMonth, 1)->startOfDay();
-        $endDate = $startDate->copy()->endOfMonth()->endOfDay();
-
-        $attendances = Attendance::with('breaks')
-            ->where('user_id', $user->id)
-            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->orderBy('date')
-            ->get();
-
-        $prevMonthDate = $startDate->copy()->subMonth();
-        $nextMonthDate = $startDate->copy()->addMonth();
-
-        $prevYear = $prevMonthDate->year;
-        $prevMonth = $prevMonthDate->month;
-
-        $nextYear = $nextMonthDate->year;
-        $nextMonth = $nextMonthDate->month;
-
-        return view('admin.user_attendance', compact(
-            'user',
-            'attendances',
-            'displayYear',
-            'displayMonth',
-            'prevYear',
-            'prevMonth',
-            'nextYear',
-            'nextMonth'
-        ));
-    }
 
     public function requestList(request $request)
     {
         $tab = $request->query('tab');
 
-        $query = AttendanceRevision::join('attendances', 'attendance_revisions.attendance_id', '=', 'attendances.id')
-        ->select('attendance_revisions.*')
-        ->orderBy('attendances.date', 'desc');
+        $query = AttendanceRevision::with(['attendance.user']);
 
         if ($tab === 'approved') {
             $query->where('status', AttendanceRevision::STATUS_APPROVED);
@@ -369,22 +387,53 @@ class AdminController extends Controller
 
     public function requestShow($id)
     {
-        $attendance = Attendance::with(['breaks', 'user'])->find($id);
-        $revision = AttendanceRevision::with('breakRevisions')->where('attendance_id', $id)->first();
+        $attendance = Attendance::with('breaks')->findOrFail($id);
 
-        $clockIn = $revision->revised_clock_in ??$attendance->clock_in;
-        $clockOut = $revision->revised_clock_out ??$attendance->clock_out;
+        $attendanceRevision = AttendanceRevision::with(['breakRevisions.break'])->where('attendance_id', $id)->first();
 
-        $breakDisplays = $attendance->breaks->sortBy('display_order')->map(function ($break) use ($revision){
-            $revised = $revision->breakRevisions->firstWhere('break_id' , $break->id);
-            return[
-                'display_order' => $break->display_order,
-                'start' => $revised ? $revised->revised_break_start : $break->break_start,
-                'end' => $revised ? $revised->revised_break_end : $break->break_end,
+        $originalBreaks = $attendance->breaks->sortBy('display_order');
+
+        $revisionsByBreakId = $attendanceRevision?->breakRevisions
+            ->filter(fn($r) => $r->break_id !== null)
+            ->keyBy('break_id');
+
+        $additionalRevisions = $attendanceRevision?->breakRevisions
+            ->filter(fn($r) => $r->break_id === null)
+            ->values();
+
+        $mergedBreaks = [];
+
+        foreach ($originalBreaks as $break) {
+            $revision = $revisionsByBreakId[$break->id] ?? null;
+
+            if ($revision) {
+                $mergedBreaks[] = [
+                    'display_order' => $break->display_order,
+                    'start' => $revision->revised_break_start,
+                    'end' => $revision->revised_break_end,
+                ];
+            } else {
+                $mergedBreaks[] = [
+                    'display_order' => $break->display_order,
+                    'start' => $break->break_start,
+                    'end' => $break->break_end,
+                ];
+            }
+        }
+
+        $nextDisplayOrder = $originalBreaks->max('display_order') ?? 0;
+        foreach ($additionalRevisions as $revision) {
+            $nextDisplayOrder++;
+            $mergedBreaks[] = [
+                'display_order' => $nextDisplayOrder,
+                'start' => $revision->revised_break_start,
+                'end' => $revision->revised_break_end,
             ];
-        });
+        }
 
-        return view('admin.approve', compact('clockIn','clockOut','breakDisplays','attendance','revision'));
+        usort($mergedBreaks, fn($a, $b) => $a['display_order'] <=> $b['display_order']);
+
+        return view('admin.approve', compact('attendanceRevision', 'attendance', 'mergedBreaks'));
     }
 
     public function approved($id, Request $request)

@@ -49,9 +49,9 @@
 }
 
 .attendance__action-button--white {
-	background-color: #e5e1e1;
-	color: #000;
+	background-color: white;
 	font-weight: bold;
+	color: black;
 }
 
 .attendance__action-button--white:hover {

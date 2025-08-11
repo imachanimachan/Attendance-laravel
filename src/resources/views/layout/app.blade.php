@@ -11,7 +11,6 @@
 </head>
 
 <body class="page">
-
     <header class="top-header">
         <div class="top-header__inner">
             <div class="top-header__logo">

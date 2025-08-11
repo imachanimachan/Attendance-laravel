@@ -266,9 +266,7 @@ class AttendanceController extends Controller
 
         }catch(\Exception $e){
         DB::rollBack();
-
-            // ログ出力（エラー内容、スタックトレース含む）
-            Log::error('勤怠修正エラー', [
+        Log::error('勤怠修正エラー', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

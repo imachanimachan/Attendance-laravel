@@ -1,21 +1,9 @@
-.attendance-list {
-	width: 100%;
-	background-color: #f4f4f4;
-	padding: 40px 0;
+.user-list__container {
+	width: 70%;
+	margin: 70px auto;
 }
 
-.attendance-list__container {
-	width: 80%;
-	max-width: 1540px;
-	min-width: 1400px;
-	margin: 0 auto;
-	background-color: #ffffff;
-	padding: 40px;
-	border-radius: 8px;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-}
-
-.attendance-list__title {
+.user-list__title {
 	font-size: 24px;
 	font-weight: bold;
 	margin-bottom: 32px;
@@ -23,59 +11,34 @@
 	padding-left: 12px;
 }
 
-.attendance-list__header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-}
-
-.attendance-list__month-button {
-	background-color: transparent;
-	border: none;
-	font-size: 16px;
-	cursor: pointer;
-	color: #333;
-}
-
-.attendance-list__current-month {
-	display: flex;
-	align-items: center;
-	font-size: 18px;
-	font-weight: bold;
-}
-
-.attendance-list__calendar-icon {
-	margin-right: 8px;
-}
-
-.attendance-list__table {
+.user-list__table {
 	width: 100%;
-	border-collapse: collapse;
 	text-align: center;
 	font-size: 15px;
+	background-color: white;
+	border-radius: 10px;
 }
 
-.attendance-list__header-row {
-	background-color: #f0f0f0;
+.user-list__header-row{
+	border-bottom: 2px solid #ddd;
 }
 
-.attendance-list__header-cell {
+.user-list__header-cell {
 	padding: 12px;
 	border-bottom: 1px solid #ddd;
+	font-weight: bold;
+	color: #706d6d
 }
 
-.attendance-list__row:nth-child(even) {
-	background-color: #f9f9f9;
-}
-
-.attendance-list__cell {
+.user-list__cell {
 	padding: 12px;
 	border-bottom: 1px solid #ddd;
+	font-weight: bold;
+	color: #706d6d
 }
 
-.attendance-list__detail-link {
+.user-list__detail-link {
 	color: #333;
-	text-decoration: underline;
-	cursor: pointer;
+	text-decoration: none;
+	font-weight: bold;
 }

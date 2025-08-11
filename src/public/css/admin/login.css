@@ -20,14 +20,6 @@
 	padding: 24px;
 }
 
-/* レスポンシブ：PC最小幅 (1400px) に合わせた制限 */
-@media screen and (min-width: 1400px) {
-	.top-header__inner {
-		max-width: 1400px;
-	}
-}
-
-
 .login {
     max-width: 400px;
     margin: 0 auto;

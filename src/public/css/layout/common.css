@@ -63,8 +63,8 @@
 	border-radius: 4px;
 }
 
-.main-content {
-	padding: 24px;
+.page{
+	background-color: #f0f0f0;
 }
 
 @media screen and (min-width: 1400px) {

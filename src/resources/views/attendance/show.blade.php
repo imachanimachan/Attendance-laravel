@@ -23,7 +23,7 @@
 				<tr class="attendance-detail__row">
 					<th class="attendance-detail__header">日付</th>
 					<td class="attendance-detail__data">
-						{{ \Carbon\Carbon::parse($attendance->date)->format('Y年n月j日') }}
+						{{ \Carbon\Carbon::parse($attendance->date)->format('Y年　n月j日') }}
 					</td>
 				</tr>
 				@if ($pendingRevisionExists)

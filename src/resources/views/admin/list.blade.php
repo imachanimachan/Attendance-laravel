@@ -9,14 +9,14 @@
 	<div class="attendance-list__container">
 		<h1 class="attendance-list__title">{{ $displayYear }}年{{ str_pad($displayMonth, 2, '0', STR_PAD_LEFT) }}月{{ $displayDate }}日の勤怠</h1>
 
-<div class="attendance-list__header">
-	<a href="{{ route('admin.list', ['year' => $prevYear, 'month' => $prevMonth, 'day' => $prevDay]) }}" class="attendance-list__month-button">← 前日</a>
-	<div class="attendance-list__current-month">
-		<span class="attendance-list__calendar-icon">📅</span>
-		<span class="attendance-list__month-text">{{ $displayYear }}/{{ str_pad($displayMonth, 2, '0', STR_PAD_LEFT) }}/{{ $displayDate }}</span>
-	</div>
-    <a href="{{ route('admin.list', ['year' => $nextYear, 'month' => $nextMonth, 'day' => $nextDay]) }}" class="attendance-list__month-button">翌日 →</a>
-</div>
+		<div class="attendance-list__header">
+			<a href="{{ route('admin.list', ['year' => $prevYear, 'month' => $prevMonth, 'day' => $prevDay]) }}" class="attendance-list__month-button">← 前日</a>
+			<div class="attendance-list__current-month">
+				<span class="attendance-list__calendar-icon">📅</span>
+				<span class="attendance-list__month-text">{{ $displayYear }}/{{ str_pad($displayMonth, 2, '0', STR_PAD_LEFT) }}/{{ $displayDate }}</span>
+			</div>
+			<a href="{{ route('admin.list', ['year' => $nextYear, 'month' => $nextMonth, 'day' => $nextDay]) }}" class="attendance-list__month-button">翌日 →</a>
+		</div>
 
 		<table class="attendance-list__table">
 			<thead class="attendance-list__thead">

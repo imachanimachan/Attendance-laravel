@@ -9,8 +9,8 @@
 		<h1 class="attendance-request__title">申請一覧</h1>
 
 		<div class="attendance-request__tabs">
-			<a href="/stamp_correction_request/list?tab=pending" class="attendance-request__tab {{ request('tab', 'pending') === 'pending' ? 'attendance-request__tab-link--active' : '' }}">承認待ち</a>
-			<a href="/stamp_correction_request/list?tab=approved" class="attendance-request__tab {{ request('tab', 'approved') === 'approved' ? 'attendance-request__tab-link--active' : '' }}">承認済み</a>
+			<a href="/admin/requests/?tab=pending" class="attendance-request__tab-link {{ request('tab', 'pending') === 'pending' ? 'attendance-request__tab-link--active' : '' }}">承認待ち</a>
+			<a href="/admin/requests/?tab=approved" class="attendance-request__tab-link {{ request('tab', 'approved') === 'approved' ? 'attendance-request__tab-link--active' : '' }}">承認済み</a>
 		</div>
 
 		<div class="attendance-request__table-wrapper">
