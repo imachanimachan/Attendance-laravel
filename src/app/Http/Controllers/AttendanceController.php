@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\AttendanceRevisionRequest;
 
 class AttendanceController extends Controller
 {
@@ -171,7 +172,7 @@ class AttendanceController extends Controller
         return view('attendance.show', compact('attendance','pendingRevisionExists'));
     }
 
-    public function request($id, Request $request)
+    public function request($id, AttendanceRevisionRequest $request)
     {
 
         DB::beginTransaction();
@@ -256,21 +257,16 @@ class AttendanceController extends Controller
                         ]));
                     }
                 }
+                DB::commit();
+                return redirect()->back()->with('message', '修正しました。');
+
             }else{
+                DB::rollBack();
                 return redirect()->back()->with('message', '修正するデータがありません。');
             }
 
-            DB::commit();
-
-            return redirect()->back()->with('message', '修正しました。');
-
         }catch(\Exception $e){
-        DB::rollBack();
-        Log::error('勤怠修正エラー', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
+            DB::rollBack();
             return redirect()->back()->with('message', '修正に失敗しました。');
         }
     }

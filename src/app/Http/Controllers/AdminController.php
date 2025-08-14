@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\AttendanceRevisionRequest;
 
 class AdminController extends Controller
 {
@@ -73,7 +74,7 @@ class AdminController extends Controller
         return view('admin.show', compact('attendance', 'attendanceRevision'));
     }
 
-    public function request($id, Request $request)
+    public function request($id, AttendanceRevisionRequest $request)
     {
 
         DB::beginTransaction();
@@ -217,20 +218,20 @@ class AdminController extends Controller
                         ]);
                     }
                 }
+                DB::commit();
+                return redirect()->back()->with('message', '修正しました。');
 
             }else{
-                return redirect()->back()->with('message', '修正するデータがありません。')->withInput();;
+                DB::rollBack();
+                return redirect()->back()->with('message', '修正するデータがありません。');
             }
-            DB::commit();
-
-            return redirect()->back()->with('message', '修正しました。');
 
         }catch(\Exception $e){
-        DB::rollBack();
-
-        return redirect()->back()->with('message', '修正に失敗しました。')->withInput();;
+            DB::rollBack();
+            return redirect()->back()->with('message', '修正に失敗しました。');
         }
     }
+
 
     private function isSameCarbon(?Carbon $a, ?Carbon $b): bool {
                     if($a === null && $b === null) return true;

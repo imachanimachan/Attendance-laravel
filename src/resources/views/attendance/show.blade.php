@@ -7,12 +7,12 @@
 @section('content')
 <div class="attendance-detail">
 	<div class="attendance-detail__container">
-	@if (session('message'))
-    <div class="flash-message">
-        {{ session('message') }}
-    </div>
-    @endif
 		<h1 class="attendance-detail__title">勤怠詳細</h1>
+		@if(session('message'))
+		<div class="flash-message">
+			{{ session('message') }}
+		</div>
+		@endif
 		<form action="{{ route( 'attendance.request' ,['id' => $attendance->id]) }}" method="POST">
 				@csrf
 			<table class="attendance-detail__table">
@@ -62,6 +62,11 @@
 						<input type="text" name="clock_in" class="attendance-detail__input" value="{{ old('clock_in', $attendance->clock_in->format('H:i')) }}">
 						～
 						<input type="text" name="clock_out" class="attendance-detail__input" value="{{ old('clock_out', $attendance->clock_out->format('H:i')) }}">
+						<p class="form__error-message">
+							@error('clock_in')
+								{{ $message }}
+							@enderror
+						</p>
 					</td>
 				</tr>
 				@foreach ($attendance->breaks->sortBy('display_order') as $break)
@@ -71,6 +76,17 @@
 							<input type="text" name="breaks[{{ $break->display_order }}][break_start]" class="attendance-detail__input" value="{{ old('breaks.'.$break->display_order.'.break_start', optional($break->break_start)->format('H:i')) }}">
 							～
 							<input type="text" name="breaks[{{ $break->display_order }}][break_end]" class="attendance-detail__input" value="{{ old('breaks.'.$break->display_order.'.break_end', optional($break->break_end)->format('H:i')) }}">
+							<p class="form__error-message">
+								@error('breaks.' . $break->display_order . '.break_start')
+									{{ $message }}
+								@enderror
+							</p>
+
+							<p class="form__error-message">
+								@error('breaks.' . $break->display_order . '.break_end')
+									{{ $message }}
+								@enderror
+							</p>
 						</td>
 					</tr>
 				@endforeach
@@ -83,11 +99,28 @@
 						<input type="text" name="breaks[{{ $nextDisplayOrder }}][break_start]" class="attendance-detail__input" value="{{ old('breaks.'.$nextDisplayOrder.'.break_start') }}">
 						～
 						<input type="text" name="breaks[{{ $nextDisplayOrder }}][break_end]" class="attendance-detail__input" value="{{ old('breaks.'.$nextDisplayOrder.'.break_end') }}">
+						<p class="form__error-message">
+							@error('breaks.' . $nextDisplayOrder . '.break_start')
+								{{ $message }}
+							@enderror
+						</p>
+
+						<p class="form__error-message">
+							@error('breaks.' . $nextDisplayOrder . '.break_end')
+								{{ $message }}
+							@enderror
+						</p>
 					</td>
 				</tr>
 				<tr class="attendance-detail__row">
 					<th class="attendance-detail__header">備考</th>
-					<td class="attendance-detail__data"><input type="text" name="note" class="attendance-detail__input attendance-detail__input--note" value="{{ old('attendance->note') }}"></td>
+					<td class="attendance-detail__data"><input type="text" name="note" class="attendance-detail__input attendance-detail__input--note" value="{{ old('attendance->note') }}">
+						<p class="form__error-message">
+							@error('note')
+								{{ $message }}
+							@enderror
+						</p>
+					</td>
 				</tr>
 				@endif
 			</table>

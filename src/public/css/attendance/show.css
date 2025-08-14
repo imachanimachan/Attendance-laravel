@@ -27,7 +27,7 @@
 
 .attendance-detail__row {
 	border-bottom: 1px solid #ddd;
-	height: 70px;
+	height: 90px;
 }
 
 .attendance-detail__row--note{
@@ -87,11 +87,6 @@
 	margin: 20px 0px;
 }
 
-.flash-message {
-	color: rgb(241, 110, 110);
-	font-size: large;
-}
-
 .alert {
 	border: 1px solid #f5c2c7;
 	background-color: #f8d7da;
@@ -121,4 +116,14 @@
 
 .alert__link:hover {
 	text-decoration: none;
+}
+
+.form__error-message{
+	color: rgb(241, 110, 110);
+}
+
+.flash-message{
+	color: rgb(241, 110, 110);
+	font-size: large;
+	font-weight: bold;
 }
