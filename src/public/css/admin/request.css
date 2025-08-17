@@ -48,3 +48,8 @@
 	font-weight: bold;
 	color: #706d6d;
 }
+
+.attendance-request__link{
+	text-decoration: none;
+	color: black;
+}

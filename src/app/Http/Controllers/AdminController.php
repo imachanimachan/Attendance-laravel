@@ -180,43 +180,52 @@ class AdminController extends Controller
                 'status' => AttendanceRevision::STATUS_APPROVED
                 ]);
 
-                if($hasAttendanceChanged){
-                    $totalWorkTime = $revisedClockIn->diffInMinutes($revisedClockOut);
+                if ($hasBreakChanged) {
+                    foreach ($breakChanges as $change) {
+                        if ($change['type'] === 'delete') {
+                            $change['break']->delete();
+                        } elseif ($change['type'] === 'create') {
+                            $total = $change['start']->diffInMinutes($change['end']);
+
+                            RestBreak::create([
+                                'attendance_id' => $attendance->id,
+                                'break_start' => $change['start'],
+                                'break_end' => $change['end'],
+                                'total_break_time' => $total,
+                                'display_order' => $change['order'],
+                            ]);
+                        } elseif ($change['type'] === 'update') {
+                            $total = $change['start']->diffInMinutes($change['end']);
+
+                            $change['break']->update([
+                                'break_start' => $change['start'],
+                                'break_end' => $change['end'],
+                                'total_break_time' => $total,
+                            ]);
+                        }
+                    }
+                }
+                if ($hasAttendanceChanged) {
                     $attendance->update([
                         'clock_in' => $revisedClockIn,
                         'clock_out' => $revisedClockOut,
-                        'total_work_time' => $totalWorkTime
                     ]);
                 }
+                if ($hasBreakChanged || $hasAttendanceChanged) {
+                    $attendance->load('breaks');
 
-                if($hasBreakChanged){
-                    foreach ($breakRevisionsToSave as $revision) {
-                        BreakRevision::create(array_merge($revision, [
-                            'attendance_revision_id' => $attendanceRevision->id,
-                        ]));
-                    }
-                }
+                    $totalBreakMinutes = $attendance->breaks
+                        ->whereNotNull('break_end')
+                        ->sum('total_break_time');
 
-                foreach($breakChanges as $change){
-                    if($change['type'] === 'delete'){
-                        $change['break']->delete();
-                    }elseif($change['type'] === 'create'){
-                        $total = $change['start']->diffInMinutes($change['end']);
-                        RestBreak::create([
-                            'attendance_id' => $attendance->id,
-                            'break_start' => $change['start'],
-                            'break_end' => $change['end'],
-                            'total_break_time' => $total,
-                            'display_order' => $change['order'],
-                        ]);
-                    }elseif($change['type'] === 'update'){
-                        $total = $change['start']->diffInMinutes($change['end']);
-                        $change['break']->update([
-                            'break_start' => $change['start'],
-                            'break_end' => $change['end'],
-                            'total_break_time' => $total,
-                        ]);
-                    }
+                    $clockIn = $revisedClockIn;
+                    $clockOut = $revisedClockOut;
+
+                    $totalWorkMinutes = $clockIn->diffInMinutes($clockOut) - $totalBreakMinutes;
+
+                    $attendance->update([
+                        'total_work_time' => $totalWorkMinutes,
+                    ]);
                 }
                 DB::commit();
                 return redirect()->back()->with('message', '修正しました。');
@@ -258,18 +267,15 @@ class AdminController extends Controller
         $startDate = Carbon::create($displayYear, $displayMonth, 1)->startOfDay();
         $endDate = $startDate->copy()->endOfMonth()->endOfDay();
 
-        // 勤怠データを取得
         $attendancesRaw = Attendance::with('breaks')
             ->where('user_id', $user->id)
             ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
             ->get();
 
-        // 勤怠を日付でマップ（キー：日付のY-m-d形式）
         $attendanceMap = $attendancesRaw->keyBy(function ($item) {
             return Carbon::parse($item->date)->format('Y-m-d');
         });
 
-        // 月の全日付を作成
         $daysInMonth = [];
         $current = $startDate->copy();
         while ($current->lte($endDate)) {
@@ -292,7 +298,7 @@ class AdminController extends Controller
 
         return view('admin.user_attendance', compact(
             'user',
-            'daysInMonth', // ← 変更点：これがviewで使う配列
+            'daysInMonth',
             'displayYear',
             'displayMonth',
             'prevYear',
@@ -439,9 +445,6 @@ class AdminController extends Controller
 
     public function approved($id, Request $request)
     {
-        //クエリパラメータできた$attendance->idから検討の勤怠、それに紐づく休憩取ってくる
-        //それを変数に入れてhiddenで送られてきた勤怠と休憩との差分がもしあれば更新。attendanceRivisionのstatusは2の承認済みにアップデート。休憩に関してはnullできたらdelete
-
         $attendance = Attendance::with('breaks')->find($id);
 
         $requestClockIn = Carbon::parse($request->input('clockIn'));
@@ -452,17 +455,20 @@ class AdminController extends Controller
 
         $updateData = [];
 
-        if(!$currentClockIn->eq($requestClockIn)){
+        if ($requestClockIn !== null && !$currentClockIn->eq($requestClockIn)) {
             $updateData['clock_in'] = $requestClockIn;
         }
-        if(!$currentClockOut->eq($requestClockOut)){
+        if ($requestClockOut !== null && !$currentClockOut->eq($requestClockOut)) {
             $updateData['clock_out'] = $requestClockOut;
         }
 
         if(!empty($updateData)){
             $updateClockIn = $updateData['clock_in'] ?? $currentClockIn;
             $updateClockOut = $updateData['clock_out'] ?? $currentClockOut;
-            $updateData['total_work_time'] = $updateClockIn->diffInMinutes($updateClockOut);
+
+            $totalBreakMinutes = $attendance->breaks->sum('total_break_time');
+
+            $updateData['total_work_time'] = $updateClockIn->diffInMinutes($updateClockOut) - $totalBreakMinutes;
 
             $attendance->update($updateData);
         }
@@ -471,20 +477,16 @@ class AdminController extends Controller
         $hasAttendanceUpdate = (!empty($updateData));
         $hasBreakUpdate = false;
 
-        //休憩hiddenで送った値を取得
         $breakInput = $request->input('breaks',[]);
-        //元の休憩データをキーをdisplay_orderにして取得
         $currentBreaks = $attendance->breaks->keyBy('display_order');
-        //hiddenで送った値をキーと値（休憩1とスタート、エンドみたいにして）値の数だけ繰り返して１つずつ取得。
-        //さらにスタートとエンドに分ける
+
         foreach($breakInput as $order => $input){
             $inputStart = $input['start'] ?? null;
             $inputEnd = $input['end'] ?? null;
 
-            //＄inputStartがあるなら、Carbonに直して使うなければnullを使う
             $newStart = $inputStart ? Carbon::parse($inputStart) : null;
             $newEnd = $inputEnd ? Carbon::parse($inputEnd) : null;
-            //元の休憩データから$order（例：休憩1）と同じdisplay_orderをgetで取得。
+
             $existingBreak = $currentBreaks->get($order);
 
             if(is_null($newStart) && is_null($newEnd)){
@@ -508,13 +510,10 @@ class AdminController extends Controller
                 $hasBreakUpdate = true;
 
             }else{
-             //eqで厳密比較して違えばtrue。
-            //つまり、「既存の start と、フォームから来た start を比較して違ってたら true」
             $startChanged = !$existingBreak->break_start->eq($newStart);
             $endChanged = !$existingBreak->break_end->eq($newEnd);
 
                 if ($startChanged && !$endChanged) {
-                    // 開始のみ変更
                     $totalBreakTime = $newStart->diffInMinutes($existingBreak->break_end);
 
                     $existingBreak->update([
@@ -526,7 +525,6 @@ class AdminController extends Controller
                 }
 
                 if (!$startChanged && $endChanged) {
-                    // 終了のみ変更
                     $totalBreakTime = $existingBreak->break_start->diffInMinutes($newEnd);
 
                     $existingBreak->update([
@@ -538,7 +536,6 @@ class AdminController extends Controller
                 }
 
                 if ($startChanged && $endChanged) {
-                    // 両方変更
                     $totalBreakTime = $newStart->diffInMinutes($newEnd);
 
                     $existingBreak->update([
@@ -552,11 +549,24 @@ class AdminController extends Controller
             }
         }
         if($hasAttendanceUpdate || $hasBreakUpdate){
+            if ($hasBreakUpdate) {
+                $attendance->load('breaks');
+                $totalBreakMinutes = $attendance->breaks->sum('total_break_time');
+
+                $updateClockIn = $updateData['clock_in'] ?? $attendance->clock_in;
+                $updateClockOut = $updateData['clock_out'] ?? $attendance->clock_out;
+
+                $totalWork = $updateClockIn->diffInMinutes($updateClockOut) - $totalBreakMinutes;
+
+                $attendance->update([
+                    'total_work_time' => $totalWork
+                ]);
+            }
+
             $revision->update([
-                'status' =>AttendanceRevision::STATUS_APPROVED,
+                'status' => AttendanceRevision::STATUS_APPROVED,
             ]);
         }
-
         return redirect()->back()->with('message','修正申請を承認しました。');
     }
 }

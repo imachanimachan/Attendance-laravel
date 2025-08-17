@@ -53,12 +53,15 @@ class AttendanceController extends Controller
 
         $clockOut = Carbon::now();
 
-        $totalBreakMinutes = RestBreak::where('attendance_id', $attendance->id)
-            ->sum('total_break_time');
+        $rawWorkSeconds = $attendance->clock_in->diffInSeconds($clockOut);
 
-        $rawWorkMinutes = $attendance->clock_in->diffInMinutes($clockOut);
+        $totalBreakSeconds = $attendance->breaks
+            ->whereNotNull('break_end')
+            ->sum(function ($break) {
+                return $break->break_start->diffInSeconds($break->break_end);
+            });
 
-        $totalWorkMinutes = $rawWorkMinutes - $totalBreakMinutes;
+        $totalWorkMinutes = floor(($rawWorkSeconds - $totalBreakSeconds) / 60);
 
         $attendance->update([
             'status_id' => $status->id,
@@ -109,7 +112,7 @@ class AttendanceController extends Controller
 
         $breakEnd = Carbon::now();
 
-        $totalBreakTime = $break->break_start->diffInMinutes($breakEnd);
+        $totalBreakTime = floor($break->break_start->diffInSeconds($breakEnd) / 60);
 
         $break->update([
             'break_end' => $breakEnd,
