@@ -92,7 +92,7 @@
 				</tr>
 				<tr class="attendance-detail__row--note">
 					<th class="attendance-detail__header">備考</th>
-					<td class="attendance-detail__data"><input type="text" name="note" class="attendance-detail__input attendance-detail__input--note" value="{{ old('attendance->note') }}">
+					<td class="attendance-detail__data"><input type="text" name="note" class="attendance-detail__input attendance-detail__input--note" value="{{ old('note', $attendance->note) }}">
 						<p class="form__error-message">
 							@error('note')
 								{{ $message }}

@@ -129,38 +129,48 @@ class AttendanceController extends Controller
 
     public function showList(Request $request)
     {
-        $year = $request->query('year');
-        $month = $request->query('month');
-
-        if ($year && $month) {
-            $currentDate = Carbon::createFromDate($year, $month, 1);
-        } else {
-            $currentDate = Carbon::now();
-        }
-
         $user = Auth::user();
 
-        $startDate = $currentDate->copy()->startOfMonth()->toDateString();
-        $endDate = $currentDate->copy()->endOfMonth()->toDateString();
+        $year = $request->input('year') ?? date('Y');
+        $month = $request->input('month') ?? date('m');
 
-        $attendances = Attendance::with('breaks')
-                ->where('user_id', $user->id)
-                ->whereBetween('date', [$startDate, $endDate])
-                ->orderBy('date')
-                ->get();
+        $displayYear = (int)$year;
+        $displayMonth = (int)$month;
 
-        $prevDate = $currentDate->copy()->subMonth();
-        $nextDate = $currentDate->copy()->addMonth();
+        $startDate = Carbon::create($displayYear, $displayMonth, 1)->startOfDay();
+        $endDate = $startDate->copy()->endOfMonth()->endOfDay();
 
-        $displayYear = $currentDate->year;
-        $displayMonth = $currentDate->month;
-        $prevYear = $prevDate->year;
-        $prevMonth = $prevDate->month;
-        $nextYear = $nextDate->year;
-        $nextMonth = $nextDate->month;
+        $attendancesRaw = Attendance::with('breaks')
+            ->where('user_id', $user->id)
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get();
+
+        $attendanceMap = $attendancesRaw->keyBy(function ($item) {
+            return Carbon::parse($item->date)->format('Y-m-d');
+        });
+
+        $daysInMonth = [];
+        $current = $startDate->copy();
+        while ($current->lte($endDate)) {
+            $dateKey = $current->format('Y-m-d');
+            $daysInMonth[] = [
+                'date' => $current->copy(),
+                'attendance' => $attendanceMap[$dateKey] ?? null,
+            ];
+            $current->addDay();
+        }
+
+        $prevMonthDate = $startDate->copy()->subMonth();
+        $nextMonthDate = $startDate->copy()->addMonth();
+
+        $prevYear = $prevMonthDate->year;
+        $prevMonth = $prevMonthDate->month;
+
+        $nextYear = $nextMonthDate->year;
+        $nextMonth = $nextMonthDate->month;
 
         return view('attendance.list', compact(
-            'attendances',
+            'daysInMonth',
             'displayYear',
             'displayMonth',
             'prevYear',

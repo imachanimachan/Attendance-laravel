@@ -27,7 +27,7 @@ class AttendancesTableSeeder extends Seeder
                 'date' => '2025-07-12',
                 'clock_in' => '2025-07-12 09:00:00',
                 'clock_out' => '2025-07-12 18:00:00',
-                'total_work_time' => '480',
+                'total_work_time' => '420',
             ],
 
             [
@@ -37,7 +37,7 @@ class AttendancesTableSeeder extends Seeder
                 'date' => '2025-07-11',
                 'clock_in' => '2025-07-11 09:00:00',
                 'clock_out' => '2025-07-11 18:00:00',
-                'total_work_time' => '480',
+                'total_work_time' => '420',
             ],
 
             [

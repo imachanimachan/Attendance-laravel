@@ -307,6 +307,7 @@ class AdminController extends Controller
             'nextMonth'
         ));
     }
+
         public function export(Request $request) :StreamedResponse
     {
         $request->validate([

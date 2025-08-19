@@ -28,7 +28,7 @@ class BreaksTableSeeder extends Seeder
                 'attendance_id' => 2,
                 'break_start' => '2025-07-11 12:00:00',
                 'break_end' => '2025-07-11 14:00:00',
-                'total_break_time' => '60',
+                'total_break_time' => '120',
                 'display_order' => 1
 
             ],
