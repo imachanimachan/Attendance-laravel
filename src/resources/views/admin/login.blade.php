@@ -34,11 +34,6 @@
                     @error('password')
                     <p class="login__error">{{ $message }}</p>
                     @enderror
-                    @if (session('message'))
-                    <div class="flash-message">
-                        {{ session('message') }}
-                    </div>
-                    @endif
                 </label>
                 <button class="login__button" type="submit">管理者ログインする</button>
             </form>
