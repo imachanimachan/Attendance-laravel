@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\RestBreak;
 use App\Models\User;
+use App\Models\Attendance;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Carbon\Carbon;
 
