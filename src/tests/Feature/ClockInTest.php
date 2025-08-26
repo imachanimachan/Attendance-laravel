@@ -23,13 +23,6 @@ class ClockInTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Attendance::factory()->create([
-            'user_id'   => $user->id,
-            'status_id' => 1,
-            'date'      => today(),
-            'clock_in'  => now()->subMinutes(1),
-        ]);
-
         $this->actingAs($user)
             ->get('/attendance')
             ->assertSee('出勤');
@@ -37,7 +30,7 @@ class ClockInTest extends TestCase
         $this->actingAs($user)
             ->followingRedirects()
             ->post('/attendance')
-            ->assertSee('勤務中');
+            ->assertSee('出勤中');
     }
 
     public function test_clock_in_button_is_not_displayed_for_user_already_clocked_out()
@@ -64,14 +57,9 @@ class ClockInTest extends TestCase
 
         Carbon::setTestNow($fixedNow = now());
 
-        Attendance::factory()->create([
-            'user_id'   => $user->id,
-            'status_id' => 1,
-            'date'      => today(),
-            'clock_in'  => $fixedNow->subMinutes(1),
+        $this->actingAs($user)->post('/attendance' ,[
+            'clock_in'  => $fixedNow,
         ]);
-
-        $this->actingAs($user)->post('/attendance');
 
         $this->actingAs($user)
             ->get(route('attendance.list'))

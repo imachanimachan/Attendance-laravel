@@ -14,10 +14,10 @@ class AttendanceFactory extends Factory
 {
 protected $model = Attendance::class;
 
-    public function definition(): array
+public function definition(): array
     {
-        $date = $this->faker->dateTimeBetween('-1 month', 'now');
-        $clockIn = Carbon::instance($date)->setTime(rand(8, 10), rand(0, 59));
+        $date = now();
+        $clockIn = $date->copy()->setTime(rand(8, 10), rand(0, 59));
         $clockOut = (clone $clockIn)->addHours(rand(7, 9))->addMinutes(rand(0, 59));
         $totalWorkTime = floor($clockIn->diffInSeconds($clockOut) / 60);
 

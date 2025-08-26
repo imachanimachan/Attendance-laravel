@@ -17,9 +17,7 @@ class RestBreakFactory extends Factory
 
     public function definition(): array
     {
-        $breakStart = Carbon::today()
-            ->setTime(rand(12, 15), rand(0, 59));
-
+        $breakStart = now()->copy()->setTime(rand(12, 15), rand(0, 59));
         $breakEnd = (clone $breakStart)->addMinutes(rand(30, 90));
 
         $totalBreakTime = floor($breakStart->diffInSeconds($breakEnd) / 60);

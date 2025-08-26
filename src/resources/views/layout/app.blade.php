@@ -22,11 +22,12 @@
                 <li><a class="top-header__nav-item" href="/admin/attendances">勤怠一覧</a></li>
                 <li><a class="top-header__nav-item" href="/admin/users">スタッフ一覧</a></li>
                 <li><a class="top-header__nav-item" href="/admin/requests">申請一覧</a></li>
+                @elseif (($attendance->status->name ?? '') === '退勤済')
+                <li><a class="top-header__nav-item" href="/attendance/list">今月の勤怠一覧</a></li>
+                <li><a class="top-header__nav-item" href="/stamp_correction_request/list">申請一覧</a></li>
                 @else
                 <li><a class="top-header__nav-item" href="/attendance">勤怠</a></li>
-                <li>
                 <li><a class="top-header__nav-item" href="/attendance/list">勤怠一覧</a></li>
-                <li>
                 <li><a class="top-header__nav-item" href="/stamp_correction_request/list">申請</a></li>
                 @endif
                 <li>

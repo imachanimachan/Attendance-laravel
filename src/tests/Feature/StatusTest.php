@@ -20,17 +20,27 @@ class StatusTest extends TestCase
 
 		$this->seed(StatusesTableSeeder::class);
 	}
+
+    public function test_off_duty_user_sees_off_duty_status_when_logged_in()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/attendance')
+            ->assertSee('勤務外');
+    }
+
     #[DataProvider('statusProvider')]
     public function test_it_displays_correct_status_on_clock_page($statusId, $expectedText)
     {
         $user = User::factory()->create();
 
-        Attendance::factory()->create([
-            'user_id'   => $user->id,
-            'status_id' => $statusId,
-            'date'      => today(),
-            'clock_in'  => now(),
-        ]);
+            Attendance::factory()->create([
+                'user_id'   => $user->id,
+                'status_id' => $statusId,
+                'date'      => today(),
+                'clock_in'  => now(),
+            ]);
 
         $this->actingAs($user)
             ->get('/attendance')
@@ -40,11 +50,9 @@ class StatusTest extends TestCase
     public static function statusProvider()
     {
         return [
-            [1, '勤務外'],
             [2, '出勤中'],
             [3, '休憩中'],
             [4, '退勤済'],
         ];
     }
-
 }

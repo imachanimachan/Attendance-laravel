@@ -40,19 +40,12 @@ class ClockOutTest extends TestCase
             ->assertSee('退勤済');
     }
 
-    public function test_user_can_clock_in_and_out_and_see_correct_times_in_attendance_list()
+    public function test_clock_in_and_clock_out_times_are_displayed_correctly_on_attendance_list_after_login()
     {
         $user = User::factory()->create();
 
         $clockInTime = now()->setTime(9, 0);
         Carbon::setTestNow($clockInTime);
-
-        Attendance::factory()->create([
-            'user_id'   => $user->id,
-            'status_id' => 1,
-            'date'      => today(),
-            'clock_in'  => $clockInTime->subMinutes(1),
-        ]);
 
         $this->actingAs($user)->post('/attendance');
 

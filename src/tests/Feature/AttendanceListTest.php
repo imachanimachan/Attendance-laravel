@@ -21,7 +21,7 @@ class AttendanceListTest extends TestCase
 		$this->seed(StatusesTableSeeder::class);
 	}
 
-    public function test_勤怠情報が登録されたユーザーにログインして勤怠一覧ページを開いたら勤怠情報がすべて表示されている()
+    public function test_attendance_information_is_displayed_for_logged_in_user()
     {
         $user = User::factory()->create();
 
@@ -76,7 +76,7 @@ class AttendanceListTest extends TestCase
             ->assertSee($workDisplay);
     }
 
-    public function test_ユーザーにログインして勤怠一覧ページを開いたら現在の月が表示されている()
+    public function test_current_month_is_displayed_for_logged_in_user()
     {
         $user = User::factory()->create();
 
@@ -89,7 +89,7 @@ class AttendanceListTest extends TestCase
             ->assertSee($currentMonth);
     }
 
-    public function test_ユーザーにログインして勤怠一覧ページを開いて前月を押したら現在の月から見て前月が表示されている()
+    public function test_previous_month_is_displayed_when_navigating_to_previous_month()
     {
         $user = User::factory()->create();
 
@@ -102,7 +102,7 @@ class AttendanceListTest extends TestCase
             ->assertSee($prevMonth->format('Y/m'));
     }
 
-    public function test_ユーザーにログインして勤怠一覧ページを開いて翌月を押したら現在の月から見て翌月が表示されている()
+    public function test_next_month_is_displayed_when_navigating_to_next_month()
     {
         $user = User::factory()->create();
 
@@ -115,7 +115,7 @@ class AttendanceListTest extends TestCase
             ->assertSee($nextMonth->format('Y/m'));
     }
 
-    public function test_勤怠情報が登録されたユーザーにログインして勤怠一覧ページを開いて詳細ボタンを押したら詳細画面に遷移する()
+    public function test_redirects_to_attendance_detail_page_when_clicking_detail_button()
     {
         $user = User::factory()->create();
 
