@@ -36,7 +36,6 @@
 							<span class="attendance-detail__separator">～</span>
 							<span class="attendance-detail__text">{{ \Carbon\Carbon::parse($attendanceRevision->revised_clock_out)->format('H:i') }}</span>
 							<input type="hidden" name="clockOut" value="{{ $attendanceRevision->revised_clock_out }}">
-
 						</div>
 					</td>
 				</tr>

@@ -148,7 +148,7 @@ class AdminRequestValidationTest extends TestCase
         ]);
     }
 
-    public function test_備考欄が未入力の場合エラーメッセージ()
+    public function test_error_message_for_empty_note()
     {
         $user = User::factory()->create();
         $date = now();

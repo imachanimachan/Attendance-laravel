@@ -151,11 +151,11 @@ class AdminRequestListTest extends TestCase
     public function test_attendance_revision_is_approved_and_updates_attendance_correctly()
     {
         $adminUser = User::factory()->create(['role' => 2]);
-        $date = now();
         $user = User::factory()->create();
 
+        $date = now();
         $clockIn = $date->copy()->setTime(9, 0);
-        $clockOut = $clockIn->copy()->addHours(8);
+        $clockOut = $date->copy()->setTime(18, 0);
 
         $attendance = Attendance::factory()->create([
             'user_id'   => $user->id,
@@ -178,7 +178,10 @@ class AdminRequestListTest extends TestCase
 
         $response = $this->actingAs($adminUser)
             ->followingRedirects()
-            ->patch(route('admin.approved' ,['id' => $attendance->id]));
+            ->patch(route('admin.approved', ['id' => $attendance->id]), [
+                'clockIn' => $clockIn->copy()->addHour()->format('H:i'),
+                'clockOut' => $clockOut->copy()->addHour()->format('H:i'),
+            ]);
 
         $this->assertDatabaseHas('attendance_revisions', [
             'id'     => $attendanceRevision->id,
