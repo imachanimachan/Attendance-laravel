@@ -12,22 +12,22 @@ use Carbon\Carbon;
  */
 class AttendanceFactory extends Factory
 {
-protected $model = Attendance::class;
+    protected $model = Attendance::class;
 
-public function definition(): array
-    {
-        $date = now();
-        $clockIn = $date->copy()->setTime(rand(8, 10), rand(0, 59));
-        $clockOut = (clone $clockIn)->addHours(rand(7, 9))->addMinutes(rand(0, 59));
-        $totalWorkTime = floor($clockIn->diffInSeconds($clockOut) / 60);
+    public function definition(): array
+        {
+            $date = now();
+            $clockIn = $date->copy()->setTime(rand(8, 10), rand(0, 59));
+            $clockOut = (clone $clockIn)->addHours(rand(7, 9))->addMinutes(rand(0, 59));
+            $totalWorkTime = floor($clockIn->diffInSeconds($clockOut) / 60);
 
-        return [
-            'user_id' => User::factory(),
-            'status_id' => 4,
-            'date' => $clockIn->toDateString(),
-            'clock_in' => $clockIn,
-            'clock_out' => $clockOut,
-            'total_work_time' => $totalWorkTime,
-        ];
-    }
+            return [
+                'user_id' => User::factory(),
+                'status_id' => 4,
+                'date' => $clockIn->toDateString(),
+                'clock_in' => $clockIn,
+                'clock_out' => $clockOut,
+                'total_work_time' => $totalWorkTime,
+            ];
+        }
 }

@@ -45,7 +45,7 @@ use App\Models\User;
     })->middleware(['throttle:6,1'])->name('verification.send');
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/attendance', [AttendanceController::class, 'index']);
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::post('/attendance', [AttendanceController::class, 'startAttendance']);
         Route::patch('/attendance', [AttendanceController::class, 'endAttendance']);
         Route::post('/break', [AttendanceController::class, 'startBreak']);

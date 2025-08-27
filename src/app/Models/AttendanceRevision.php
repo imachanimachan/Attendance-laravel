@@ -3,18 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AttendanceRevision extends Model
 {
-        protected $fillable = [
-        'attendance_id',
-        'applied_on',
-        'original_clock_in',
-        'original_clock_out',
-        'revised_clock_in',
-        'revised_clock_out',
-        'note',
-        'status'
+    use HasFactory;
+
+    protected $fillable = [
+    'attendance_id',
+    'applied_on',
+    'original_clock_in',
+    'original_clock_out',
+    'revised_clock_in',
+    'revised_clock_out',
+    'note',
+    'status'
     ];
 
     public function attendance()
