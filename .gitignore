@@ -23,3 +23,11 @@ yarn-error.log
 /.vscode
 /.zed
 docker/mysql/data/
+google-chrome-stable_current_amd64.deb
+*.deb
+*.iso
+*.tar.gz
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
