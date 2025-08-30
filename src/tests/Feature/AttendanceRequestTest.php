@@ -48,7 +48,7 @@ class AttendanceRequestTest extends TestCase
         $adminUser = User::factory()->create(['role' => 2]);
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/requests');
+            ->get(route('admin.request.list'));
         $response->assertStatus(200);
         $response->assertSee($date->format('Y/m/d'));
         $response->assertSee('電車遅延のため');

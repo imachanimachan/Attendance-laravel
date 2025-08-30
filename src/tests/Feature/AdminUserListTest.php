@@ -38,7 +38,7 @@ class AdminUserListTest extends TestCase
         });
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/users');
+            ->get('/admin/staff/list');
         $response->assertStatus(200);
 
         foreach ($attendances as $attendance) {
@@ -79,7 +79,7 @@ class AdminUserListTest extends TestCase
         ]);
 
         $response = $this->actingAs($adminUser)
-            ->get(route('admin.users.attendances', ['user' => $targetUser->id]));
+            ->get(route('admin.user.attendance', ['id' => $targetUser->id]));
 
         $response->assertStatus(200);
         $response->assertSee($targetUser->name);
@@ -111,7 +111,7 @@ class AdminUserListTest extends TestCase
         ]);
 
         $response = $this->actingAs($adminUser)
-            ->get(route('admin.users.attendances', ['user' => $targetUser->id, 'year' => $year, 'month' => $month]));
+            ->get(route('admin.user.attendance', ['id' => $targetUser->id, 'year' => $year, 'month' => $month]));
         $response->assertStatus(200);
 
         $response->assertSee($targetUser->name);
@@ -145,7 +145,7 @@ class AdminUserListTest extends TestCase
         ]);
 
         $response = $this->actingAs($adminUser)
-            ->get(route('admin.users.attendances', ['user' => $targetUser->id, 'year' => $year, 'month' => $month]));
+            ->get(route('admin.user.attendance', ['id' => $targetUser->id, 'year' => $year, 'month' => $month]));
         $response->assertStatus(200);
 
         $response->assertSee($targetUser->name);

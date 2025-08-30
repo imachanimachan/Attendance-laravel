@@ -13,7 +13,7 @@
     </div>
     @endif
 		<h1 class="attendance-detail__title">勤怠詳細</h1>
-		<form action="{{ route( 'admin.approved' ,['id' => $attendance->id]) }}" method="POST">
+		<form action="{{ route( 'admin.approved' ,['attendance_correct_request' => $attendance->id]) }}" method="POST">
 				@method('PATCH')
 				@csrf
 			<table class="attendance-detail__table">

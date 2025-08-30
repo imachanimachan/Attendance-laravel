@@ -10,12 +10,12 @@
 		<h1 class="attendance-list__title">{{ $user->name }}さんの勤怠</h1>
 
 		<div class="attendance-list__header">
-			<a href="{{ route('admin.users.attendances', ['user' => $user->id, 'year' => $prevYear, 'month' => $prevMonth]) }}" class="attendance-list__month-button">← 前月</a>
+			<a href="{{ route('admin.user.attendance', ['id' => $user->id, 'year' => $prevYear, 'month' => $prevMonth]) }}" class="attendance-list__month-button">← 前月</a>
 			<div class="attendance-list__current-month">
 				<span class="attendance-list__calendar-icon">📅</span>
 				<span class="attendance-list__month-text">{{ $displayYear }}/{{ str_pad($displayMonth, 2, '0', STR_PAD_LEFT) }}</span>
 			</div>
-			<a href="{{ route('admin.users.attendances', ['user' => $user->id, 'year' => $nextYear, 'month' => $nextMonth]) }}" class="attendance-list__month-button">翌月 →</a>
+			<a href="{{ route('admin.user.attendance', ['id' => $user->id, 'year' => $nextYear, 'month' => $nextMonth]) }}" class="attendance-list__month-button">翌月 →</a>
 		</div>
 
 		<table class="attendance-list__table">

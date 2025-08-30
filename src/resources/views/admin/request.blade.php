@@ -9,8 +9,8 @@
 		<h1 class="attendance-request__title">申請一覧</h1>
 
 		<div class="attendance-request__tabs">
-			<a href="/admin/requests/?tab=pending" class="attendance-request__tab-link {{ request('tab', 'pending') === 'pending' ? 'attendance-request__tab-link--active' : '' }}">承認待ち</a>
-			<a href="/admin/requests/?tab=approved" class="attendance-request__tab-link {{ request('tab', 'approved') === 'approved' ? 'attendance-request__tab-link--active' : '' }}">承認済み</a>
+			<a href="{{ route( 'admin.request.list', ['tab' => 'pending']) }}" class="attendance-request__tab-link {{ request('tab', 'pending') === 'pending' ? 'attendance-request__tab-link--active' : '' }}">承認待ち</a>
+			<a href="{{ route( 'admin.request.list', ['tab' => 'approved']) }}" class="attendance-request__tab-link {{ request('tab', 'approved') === 'approved' ? 'attendance-request__tab-link--active' : '' }}">承認済み</a>
 		</div>
 
 		<div class="attendance-request__table-wrapper">
@@ -34,7 +34,7 @@
 						<td class="attendance-request__cell">{{ $attendanceRevision->note }}</td>
 						<td class="attendance-request__cell">{{ \Carbon\Carbon::parse($attendanceRevision->applied_on)->format('Y/m/d') }}</td>
 						<td class="attendance-request__cell">
-							<a href="{{ route( 'admin.request.show' ,['id' => $attendanceRevision->attendance->id]) }}" class="attendance-request__link">詳細</a>
+							<a href="{{ route( 'admin.request.show',        ['attendance_correct_request' => $attendanceRevision->attendance->id]) }}" class="attendance-request__link">詳細</a>
 						</td>
 					</tr>
 					@endforeach

@@ -19,9 +19,9 @@
             <nav class="top-header__nav">
                 <ul class="top-header__nav-list">
                 @if (Auth::user()->isAdmin())
-                <li><a class="top-header__nav-item" href="/admin/attendances">勤怠一覧</a></li>
-                <li><a class="top-header__nav-item" href="/admin/users">スタッフ一覧</a></li>
-                <li><a class="top-header__nav-item" href="/admin/requests">申請一覧</a></li>
+                <li><a class="top-header__nav-item" href="/admin/attendance/list">勤怠一覧</a></li>
+                <li><a class="top-header__nav-item" href="/admin/staff/list">スタッフ一覧</a></li>
+                <li><a class="top-header__nav-item" href="{{ route('admin.request.list') }}">申請一覧</a></li>
                 @elseif (Route::currentRouteName() === 'attendance.index' &&
                 ($attendance->status->name ?? '') === '退勤済')
                 <li><a class="top-header__nav-item" href="/attendance/list">今月の勤怠一覧</a></li>

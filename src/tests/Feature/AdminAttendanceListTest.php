@@ -37,7 +37,7 @@ class AdminAttendanceListTest extends TestCase
         });
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/attendances');
+            ->get('/admin/attendance/list');
         $response->assertStatus(200);
 
         foreach ($attendances as $attendance) {
@@ -57,7 +57,7 @@ class AdminAttendanceListTest extends TestCase
         $now =now();
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/attendances');
+            ->get('/admin/attendance/list');
         $response->assertStatus(200);
         $response->assertSee($now->format('Y/m/d'));
     }
@@ -81,7 +81,7 @@ class AdminAttendanceListTest extends TestCase
         });
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/attendances?year=' . $yesterday->year .
+            ->get('/admin/attendance/list?year=' . $yesterday->year .
                 '&month=' . $yesterday->month .
                 '&day=' . $yesterday->day);
 
@@ -117,7 +117,7 @@ class AdminAttendanceListTest extends TestCase
         });
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/attendances?year=' . $tomorrow->year .
+            ->get('/admin/attendance/list?year=' . $tomorrow->year .
                 '&month=' . $tomorrow->month .
                 '&day=' . $tomorrow->day);
 

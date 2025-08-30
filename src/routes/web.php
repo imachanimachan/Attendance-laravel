@@ -51,19 +51,24 @@ use App\Models\User;
         Route::post('/break', [AttendanceController::class, 'startBreak']);
         Route::patch('/break', [AttendanceController::class, 'endBreak']);
         Route::get('/attendance/list', [AttendanceController::class, 'showList'])->name('attendance.list');
-        Route::get('/attendance/detail/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
+        Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
         Route::post('/attendance/detail/{id}', [AttendanceController::class, 'request'])->name('attendance.request');
         Route::get('/stamp_correction_request/list', [AttendanceController::class, 'requestList']);
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
-        Route::get('/admin/attendances', [AdminController::class, 'index'])->name('admin.list');
-        Route::get('/admin/attendances/{id}', [AdminController::class, 'show'])->name('admin.show');
-        Route::post('/admin/attendances/{id}', [AdminController::class, 'request'])->name('admin.request');
-        Route::get('/admin/users', [AdminController::class, 'listUsers']);
-        Route::get('/admin/users/{user}/attendances', [AdminController::class, 'showUserAttendances'])->name('admin.users.attendances');
+        Route::get('/admin/attendance/list', [AdminController::class, 'index'])->name('admin.list');
+        Route::get('/admin/staff/list', [AdminController::class, 'listUsers']);
+        Route::get('/admin/attendance/staff/{id}', [AdminController::class, 'showUserAttendances'])->name('admin.user.attendance');
         Route::post('/admin/export', [AdminController::class, 'export'])->name('admin.attendance.export');
-        Route::get('/admin/requests', [AdminController::class, 'requestList']);
-        Route::get('/admin/requests/{id}', [AdminController::class, 'requestShow'])->name('admin.request.show');
-        Route::patch('/admin/requests/{id}', [AdminController::class, 'approved'])->name('admin.approved');
+        Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [AdminController::class, 'requestShow'])->name('admin.request.show');
+        Route::patch('/stamp_correction_request/approve/{attendance_correct_request}', [AdminController::class, 'approved'])->name('admin.approved');
+    });
+
+    Route::prefix('admin')
+    ->middleware(['auth', 'admin'])
+    ->group(function () {
+        Route::get('/attendance/{id}', [AdminController::class, 'show'])->name('admin.show');
+        Route::post('/attendance/{id}', [AdminController::class, 'request'])->name('admin.request');
+        Route::get('/stamp_correction_request/list', [AdminController::class, 'requestList'])->name('admin.request.list');
     });

@@ -53,7 +53,7 @@ class AdminRequestListTest extends TestCase
         }
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/requests/?tab=pending');
+            ->get(route('admin.request.list', ['tab' =>'pending']));
 
         $response->assertStatus(200);
         $response->assertSee('承認待ち');
@@ -96,7 +96,7 @@ class AdminRequestListTest extends TestCase
         }
 
         $response = $this->actingAs($adminUser)
-            ->get('/admin/requests/?tab=approved');
+            ->get(route('admin.request.list', ['tab' =>'approved']));
 
         $response->assertStatus(200);
         $response->assertSee('承認済み');
@@ -137,7 +137,7 @@ class AdminRequestListTest extends TestCase
         ]);
 
         $response = $this->actingAs($adminUser)
-            ->get(route('admin.request.show' ,['id' => $attendance->id]));
+            ->get(route('admin.request.show' ,['attendance_correct_request' => $attendance->id]));
 
         $response->assertStatus(200);
 
@@ -178,7 +178,7 @@ class AdminRequestListTest extends TestCase
 
         $response = $this->actingAs($adminUser)
             ->followingRedirects()
-            ->patch(route('admin.approved', ['id' => $attendance->id]), [
+            ->patch(route('admin.approved', ['attendance_correct_request' => $attendance->id]), [
                 'clockIn' => $clockIn->copy()->addHour()->format('H:i'),
                 'clockOut' => $clockOut->copy()->addHour()->format('H:i'),
             ]);

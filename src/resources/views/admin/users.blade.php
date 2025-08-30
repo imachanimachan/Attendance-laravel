@@ -24,7 +24,7 @@
 							{{ $user->email }}
 						</td>
 						<td class="user-list__cell">
-							<a href="{{ route('admin.users.attendances', ['user' => $user->id]) }}" class="user-list__detail-link">詳細</a>
+							<a href="{{ route('admin.user.attendance', ['id' => $user->id]) }}" class="user-list__detail-link">詳細</a>
 						</td>
 					</tr>
 				@endforeach

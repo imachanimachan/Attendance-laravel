@@ -32,6 +32,6 @@ class AdminLoginController extends Controller
                 'email' => 'ログイン情報が登録されていません。',
             ]);
         }
-        return redirect()->intended('/admin/attendances');
+        return redirect()->intended('/admin/attendance/list');
     }
 }
