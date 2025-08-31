@@ -4,7 +4,9 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AdminLoginController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminAttendanceController;
+use App\Http\Controllers\AdminRevisionRequestController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -57,18 +59,18 @@ use App\Models\User;
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
-        Route::get('/admin/attendance/list', [AdminController::class, 'index'])->name('admin.list');
-        Route::get('/admin/staff/list', [AdminController::class, 'listUsers']);
-        Route::get('/admin/attendance/staff/{id}', [AdminController::class, 'showUserAttendances'])->name('admin.user.attendance');
-        Route::post('/admin/export', [AdminController::class, 'export'])->name('admin.attendance.export');
-        Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [AdminController::class, 'requestShow'])->name('admin.request.show');
-        Route::patch('/stamp_correction_request/approve/{attendance_correct_request}', [AdminController::class, 'approved'])->name('admin.approved');
+        Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'index'])->name('admin.list');
+        Route::get('/admin/staff/list', [AdminUserController::class, 'listUsers']);
+        Route::get('/admin/attendance/staff/{id}', [AdminUserController::class, 'showUserAttendances'])->name('admin.user.attendance');
+        Route::post('/admin/export', [AdminUserController::class, 'export'])->name('admin.attendance.export');
+        Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [AdminRevisionRequestController::class, 'requestShow'])->name('admin.request.show');
+        Route::patch('/stamp_correction_request/approve/{attendance_correct_request}', [AdminRevisionRequestController::class, 'approved'])->name('admin.approved');
     });
 
     Route::prefix('admin')
     ->middleware(['auth', 'admin'])
     ->group(function () {
-        Route::get('/attendance/{id}', [AdminController::class, 'show'])->name('admin.show');
-        Route::post('/attendance/{id}', [AdminController::class, 'request'])->name('admin.request');
-        Route::get('/stamp_correction_request/list', [AdminController::class, 'requestList'])->name('admin.request.list');
+        Route::get('/attendance/{id}', [AdminAttendanceController::class, 'show'])->name('admin.show');
+        Route::post('/attendance/{id}', [AdminRevisionRequestController::class, 'request'])->name('admin.request');
+        Route::get('/stamp_correction_request/list', [AdminRevisionRequestController::class, 'requestList'])->name('admin.request.list');
     });
