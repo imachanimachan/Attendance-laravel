@@ -192,60 +192,34 @@ class AttendanceController extends Controller
 
     public function request($id, AttendanceRevisionRequest $request)
     {
-
         DB::beginTransaction();
-        try{
+        try {
             $attendance = Attendance::with('breaks')->find($id);
-
             $currentClockIn = Carbon::parse($attendance->clock_in);
             $currentClockOut = Carbon::parse($attendance->clock_out);
-
             $inputClockIn = $request->input('clock_in');
             $inputClockOut = $request->input('clock_out');
-
             $revisedClockIn = Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputClockIn);
-            $revisedClockOut = Carbon::parse($currentClockOut->format('Y-m-d').' '. $inputClockOut);
-
+            $revisedClockOut = Carbon::parse($currentClockOut->format('Y-m-d').' '.$inputClockOut);
             $note = $request->input('note');
 
-            $hasAttendanceChanged =
-                !$currentClockIn->eq($revisedClockIn) ||
-                !$currentClockOut->eq($revisedClockOut);
-
+            $hasAttendanceChanged = !$currentClockIn->eq($revisedClockIn) || !$currentClockOut->eq($revisedClockOut);
             $revisionBreaks = $request->input('breaks', []);
-            $hasBreakChanged = false;
-            $breakRevisionsToSave = [];
+            $hasBreakChanged = false; $breakRevisionsToSave = [];
 
             foreach ($revisionBreaks as $displayOrder => $revisionBreak) {
-                $inputBreakStart = $revisionBreak['break_start'] ?? null;
-                if($inputBreakStart === ''){
-                    $inputBreakStart = null;
-                }
-
-                $inputBreakEnd = $revisionBreak['break_end'] ?? null;
-                if($inputBreakEnd === ''){
-                    $inputBreakEnd = null;
-                }
-
-                $revisedBreakStart = $inputBreakStart !== null ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakStart) : null;
-                $revisedBreakEnd = $inputBreakEnd !== null ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakEnd) : null;
-
+                $inputBreakStart = $revisionBreak['break_start'] ?? null; if ($inputBreakStart === '') $inputBreakStart = null;
+                $inputBreakEnd = $revisionBreak['break_end'] ?? null; if ($inputBreakEnd === '') $inputBreakEnd = null;
+                $revisedBreakStart = $inputBreakStart ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakStart) : null;
+                $revisedBreakEnd = $inputBreakEnd ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakEnd) : null;
                 $currentBreak = $attendance->breaks->firstWhere('display_order', $displayOrder);
-
-                $originalBreakStart = optional($currentBreak)->break_start;
-                $originalBreakEnd = optional($currentBreak)->break_end;
+                $currentBreakStart = optional($currentBreak)->break_start ? Carbon::parse($currentBreak->break_start) : null;
+                $currentBreakEnd = optional($currentBreak)->break_end ? Carbon::parse($currentBreak->break_end) : null;
                 $currentBreakId = optional($currentBreak)->id;
 
-                $currentBreakStart = $originalBreakStart ? Carbon::parse($originalBreakStart) : null;
-                $currentBreakEnd = $originalBreakEnd ? Carbon::parse($originalBreakEnd) : null;
-
-                $isChanged =
-                        !$this->isSameCarbon($currentBreakStart, $revisedBreakStart) ||
-                        !$this->isSameCarbon($currentBreakEnd, $revisedBreakEnd);
-
+                $isChanged = !$this->isSameCarbon($currentBreakStart, $revisedBreakStart) || !$this->isSameCarbon($currentBreakEnd, $revisedBreakEnd);
                 if ($isChanged) {
                     $hasBreakChanged = true;
-
                     $breakRevisionsToSave[] = [
                         'break_id' => $currentBreakId,
                         'original_break_start' => $currentBreakStart,
@@ -257,19 +231,18 @@ class AttendanceController extends Controller
             }
 
             if ($hasAttendanceChanged || $hasBreakChanged) {
-            $attendanceRevision = AttendanceRevision::create([
-                'attendance_id' => $attendance->id,
-                'applied_on' => now(),
-                'original_clock_in' => $currentClockIn,
-                'original_clock_out' => $currentClockOut,
-                'revised_clock_in' => $revisedClockIn,
-                'revised_clock_out' => $revisedClockOut,
-                'note' => $note,
-                'status' => AttendanceRevision::STATUS_PENDING
+                $attendanceRevision = AttendanceRevision::create([
+                    'attendance_id' => $attendance->id,
+                    'applied_on' => now(),
+                    'original_clock_in' => $currentClockIn,
+                    'original_clock_out' => $currentClockOut,
+                    'revised_clock_in' => $revisedClockIn,
+                    'revised_clock_out' => $revisedClockOut,
+                    'note' => $note,
+                    'status' => AttendanceRevision::STATUS_PENDING
                 ]);
-
-                if($hasBreakChanged){
-                        foreach ($breakRevisionsToSave as $revision) {
+                if ($hasBreakChanged) {
+                    foreach ($breakRevisionsToSave as $revision) {
                         BreakRevision::create(array_merge($revision, [
                             'attendance_revision_id' => $attendanceRevision->id,
                         ]));
@@ -277,13 +250,11 @@ class AttendanceController extends Controller
                 }
                 DB::commit();
                 return redirect()->back()->with('message', '修正しました。');
-
-            }else{
+            } else {
                 DB::rollBack();
                 return redirect()->back()->with('message', '修正するデータがありません。');
             }
-
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('message', '修正に失敗しました。');
         }

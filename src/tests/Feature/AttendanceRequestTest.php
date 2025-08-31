@@ -55,7 +55,7 @@ class AttendanceRequestTest extends TestCase
         $response->assertSee($user->name);
 
         $response = $this->actingAs($adminUser)
-            ->get(route('admin.request.show', $attendance->id));
+            ->get(route( 'admin.request.show', ['attendance_correct_request'=> $attendance->id]));
         $response->assertStatus(200);
         $response->assertSee('電車遅延のため');
         $response->assertSee($clockIn->copy()->addHour()->format('H:i'));

@@ -96,7 +96,7 @@ class AdminRequestListTest extends TestCase
         }
 
         $response = $this->actingAs($adminUser)
-            ->get(route('admin.request.list', ['tab' =>'approved']));
+            ->get(route('admin.request.list', ['tab' => 'approved']));
 
         $response->assertStatus(200);
         $response->assertSee('承認済み');
@@ -137,7 +137,7 @@ class AdminRequestListTest extends TestCase
         ]);
 
         $response = $this->actingAs($adminUser)
-            ->get(route('admin.request.show' ,['attendance_correct_request' => $attendance->id]));
+            ->get(route('admin.request.show', ['attendance_correct_request' => $attendance->id]));
 
         $response->assertStatus(200);
 

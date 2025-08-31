@@ -34,7 +34,7 @@
 						<td class="attendance-request__cell">{{ $attendanceRevision->note }}</td>
 						<td class="attendance-request__cell">{{ \Carbon\Carbon::parse($attendanceRevision->applied_on)->format('Y/m/d') }}</td>
 						<td class="attendance-request__cell">
-							<a href="{{ route( 'admin.request.show',        ['attendance_correct_request' => $attendanceRevision->attendance->id]) }}" class="attendance-request__link">詳細</a>
+							<a href="{{ route( 'admin.request.show', ['attendance_correct_request'=> $attendanceRevision->attendance->id]) }}" class="attendance-request__link">詳細</a>
 						</td>
 					</tr>
 					@endforeach

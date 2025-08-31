@@ -11,7 +11,7 @@
 	<div class="alert alert--warning">
 		<p class="alert__text">
 			※この勤怠は修正申請があります。
-			<a href="/admin/requests" class="alert__link">申請一覧ページ</a>より確認してください。
+			<a href="{{ route('admin.request.list') }}" class="alert__link">申請一覧ページ</a>より確認してください。
 		</p>
 	</div>
 	@endif

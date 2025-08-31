@@ -76,171 +76,125 @@ class AdminController extends Controller
 
     public function request($id, AttendanceRevisionRequest $request)
     {
-
         DB::beginTransaction();
-        try{
+        try {
             $attendance = Attendance::with('breaks')->find($id);
-
             $currentClockIn = Carbon::parse($attendance->clock_in);
             $currentClockOut = Carbon::parse($attendance->clock_out);
-
             $inputClockIn = $request->input('clock_in');
             $inputClockOut = $request->input('clock_out');
-
             $revisedClockIn = Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputClockIn);
-            $revisedClockOut = Carbon::parse($currentClockOut->format('Y-m-d').' '. $inputClockOut);
-
+            $revisedClockOut = Carbon::parse($currentClockOut->format('Y-m-d').' '.$inputClockOut);
             $note = $request->input('note');
 
-            $hasAttendanceChanged =
-                !$currentClockIn->eq($revisedClockIn) ||
-                !$currentClockOut->eq($revisedClockOut);
-
+            $hasAttendanceChanged = !$currentClockIn->eq($revisedClockIn) || !$currentClockOut->eq($revisedClockOut);
             $revisionBreaks = $request->input('breaks', []);
-            $hasBreakChanged = false;
-            $breakRevisionsToSave = [];
-            $breakChanges = [];
+            $hasBreakChanged = false; $breakChanges = [];
 
             foreach ($revisionBreaks as $displayOrder => $revisionBreak) {
-                    $inputBreakStart = $revisionBreak['break_start'] ?? null;
-                    if($inputBreakStart === ''){
-                        $inputBreakStart = null;
-                    }
+                $inputBreakStart = $revisionBreak['break_start'] ?? null; if ($inputBreakStart === '') $inputBreakStart = null;
+                $inputBreakEnd = $revisionBreak['break_end'] ?? null; if ($inputBreakEnd === '') $inputBreakEnd = null;
+                $revisedBreakStart = $inputBreakStart !== null ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakStart) : null;
+                $revisedBreakEnd = $inputBreakEnd !== null ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakEnd) : null;
+                $currentBreak = $attendance->breaks->firstWhere('display_order', $displayOrder);
+                $currentBreakStart = optional($currentBreak)->break_start ? Carbon::parse($currentBreak->break_start) : null;
+                $currentBreakEnd = optional($currentBreak)->break_end ? Carbon::parse($currentBreak->break_end) : null;
+                $currentBreakId = optional($currentBreak)->id;
 
-                    $inputBreakEnd = $revisionBreak['break_end'] ?? null;
-                    if($inputBreakEnd === ''){
-                        $inputBreakEnd = null;
-                    }
-
-                    $revisedBreakStart = $inputBreakStart !== null ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakStart) : null;
-                    $revisedBreakEnd = $inputBreakEnd !== null ? Carbon::parse($currentClockIn->format('Y-m-d').' '.$inputBreakEnd) : null;
-
-                    $currentBreak = $attendance->breaks->firstWhere('display_order', $displayOrder);
-
-                    $originalBreakStart = optional($currentBreak)->break_start;
-                    $originalBreakEnd = optional($currentBreak)->break_end;
-                    $currentBreakId = optional($currentBreak)->id;
-
-                    $currentBreakStart = $originalBreakStart ? Carbon::parse($originalBreakStart) : null;
-                    $currentBreakEnd = $originalBreakEnd ? Carbon::parse($originalBreakEnd) : null;
-
-                    $isChanged =
-                            !$this->isSameCarbon($currentBreakStart, $revisedBreakStart) ||
-                            !$this->isSameCarbon($currentBreakEnd, $revisedBreakEnd);
-
-                    if ($isChanged) {
-                        $hasBreakChanged = true;
-
-                        $breakRevisionsToSave[] = [
-                            'break_id' => $currentBreakId,
-                            'original_break_start' => $currentBreakStart,
-                            'original_break_end' => $currentBreakEnd,
-                            'revised_break_start' => $revisedBreakStart,
-                            'revised_break_end' => $revisedBreakEnd,
-                        ];
-
-                        if(is_null($revisedBreakStart) && is_null($revisedBreakEnd)){
-                            if($currentBreak){
-                                $breakChanges[] = [
-                                    'type' => 'delete',
-                                    'break' => $currentBreak
-                                ];
-                            }
-                            continue;
-                        }
-
-                        if(!$currentBreak){
-                            $breakChanges[] = [
-                                'type' => 'create',
-                                'start' => $revisedBreakStart,
-                                'end' => $revisedBreakEnd,
-                                'order' => $displayOrder,
-                            ];
-                        }else{
-                                $breakChanges[] = [
-                                'type' => 'update',
-                                'start' => $revisedBreakStart,
-                                'end' => $revisedBreakEnd,
-                                'order' => $displayOrder,
-                                'break' => $currentBreak
-                            ];
-                        }
+                $isChanged = !$this->isSameCarbon($currentBreakStart, $revisedBreakStart) || !$this->isSameCarbon($currentBreakEnd, $revisedBreakEnd);
+                if ($isChanged) {
+                    $hasBreakChanged = true;
+                    if (is_null($revisedBreakStart) && is_null($revisedBreakEnd)) {
+                        if ($currentBreak) $breakChanges[] = ['type'=>'delete','break'=>$currentBreak];
+                    } elseif (!$currentBreak) {
+                        $breakChanges[] = ['type'=>'create','start'=>$revisedBreakStart,'end'=>$revisedBreakEnd,'order'=>$displayOrder];
+                    } else {
+                        $breakChanges[] = ['type'=>'update','start'=>$revisedBreakStart,'end'=>$revisedBreakEnd,'order'=>$displayOrder,'break'=>$currentBreak];
                     }
                 }
-
-            if ($hasAttendanceChanged || $hasBreakChanged) {
-            $attendanceRevision = AttendanceRevision::create([
-                'attendance_id' => $attendance->id,
-                'applied_on' => now(),
-                'original_clock_in' => $currentClockIn,
-                'original_clock_out' => $currentClockOut,
-                'revised_clock_in' => $revisedClockIn,
-                'revised_clock_out' => $revisedClockOut,
-                'note' => $note,
-                'status' => AttendanceRevision::STATUS_APPROVED
-                ]);
-
-                if ($hasBreakChanged) {
-                    foreach ($breakChanges as $change) {
-                        if ($change['type'] === 'delete') {
-                            $change['break']->delete();
-                        } elseif ($change['type'] === 'create') {
-                            $total = $change['start']->diffInMinutes($change['end']);
-
-                            RestBreak::create([
-                                'attendance_id' => $attendance->id,
-                                'break_start' => $change['start'],
-                                'break_end' => $change['end'],
-                                'total_break_time' => $total,
-                                'display_order' => $change['order'],
-                            ]);
-                        } elseif ($change['type'] === 'update') {
-                            $total = $change['start']->diffInMinutes($change['end']);
-
-                            $change['break']->update([
-                                'break_start' => $change['start'],
-                                'break_end' => $change['end'],
-                                'total_break_time' => $total,
-                            ]);
-                        }
-                    }
-                }
-                if ($hasAttendanceChanged) {
-                    $attendance->update([
-                        'clock_in' => $revisedClockIn,
-                        'clock_out' => $revisedClockOut,
-                    ]);
-                }
-                if ($hasBreakChanged || $hasAttendanceChanged) {
-                    $attendance->load('breaks');
-
-                    $totalBreakMinutes = $attendance->breaks
-                        ->whereNotNull('break_end')
-                        ->sum('total_break_time');
-
-                    $clockIn = $revisedClockIn;
-                    $clockOut = $revisedClockOut;
-
-                    $totalWorkMinutes = $clockIn->diffInMinutes($clockOut) - $totalBreakMinutes;
-
-                    $attendance->update([
-                        'total_work_time' => $totalWorkMinutes,
-                    ]);
-                }
-                DB::commit();
-                return redirect()->back()->with('message', '修正しました。');
-
-            }else{
-                DB::rollBack();
-                return redirect()->back()->with('message', '修正するデータがありません。');
             }
 
-        }catch(\Exception $e){
-            DB::rollBack();
-            return redirect()->back()->with('message', '修正に失敗しました。');
+            if ($hasAttendanceChanged || $hasBreakChanged) {
+                $attendanceRevision = AttendanceRevision::create([
+                    'attendance_id'=>$attendance->id,'applied_on'=>now(),
+                    'original_clock_in'=>$currentClockIn,'original_clock_out'=>$currentClockOut,
+                    'revised_clock_in'=>$revisedClockIn,'revised_clock_out'=>$revisedClockOut,
+                    'note'=>$note,'status'=>AttendanceRevision::STATUS_APPROVED
+                ]);
+
+                foreach ($breakChanges as $change) {
+                    if ($change['type'] === 'delete') {
+                        $originalStart = $change['break']->break_start;
+                        $originalEnd = $change['break']->break_end;
+                        $change['break']->delete();
+
+                        BreakRevision::create([
+                            'attendance_revision_id' => $attendanceRevision->id,
+                            'break_id' => $change['break']->id,
+                            'original_break_start' => $originalStart,
+                            'original_break_end' => $originalEnd,
+                            'revised_break_start' => null,
+                            'revised_break_end' => null,
+                        ]);
+
+                    } elseif ($change['type'] === 'create') {
+                        $total = $change['start']->diffInMinutes($change['end']);
+                        $newBreak = RestBreak::create([
+                            'attendance_id' => $attendance->id,
+                            'break_start' => $change['start'],
+                            'break_end' => $change['end'],
+                            'total_break_time' => $total,
+                            'display_order' => $change['order'],
+                        ]);
+
+                        BreakRevision::create([
+                            'attendance_revision_id' => $attendanceRevision->id,
+                            'break_id' => null,
+                            'original_break_start' => null,
+                            'original_break_end' => null,
+                            'revised_break_start' => $change['start'],
+                            'revised_break_end' => $change['end'],
+                        ]);
+
+                    } elseif ($change['type'] === 'update') {
+                        $originalStart = $change['break']->break_start;
+                        $originalEnd = $change['break']->break_end;
+
+                        $total = $change['start']->diffInMinutes($change['end']);
+                        $change['break']->update([
+                            'break_start' => $change['start'],
+                            'break_end' => $change['end'],
+                            'total_break_time' => $total,
+                        ]);
+
+                        BreakRevision::create([
+                            'attendance_revision_id' => $attendanceRevision->id,
+                            'break_id' => $change['break']->id,
+                            'original_break_start' => $originalStart,
+                            'original_break_end' => $originalEnd,
+                            'revised_break_start' => $change['start'],
+                            'revised_break_end' => $change['end'],
+                        ]);
+                    }
+                }
+
+                if ($hasAttendanceChanged) $attendance->update(['clock_in'=>$revisedClockIn,'clock_out'=>$revisedClockOut]);
+
+                if ($hasBreakChanged || $hasAttendanceChanged) {
+                    $attendance->load('breaks');
+                    $totalBreakMinutes = $attendance->breaks->whereNotNull('break_end')->sum('total_break_time');
+                    $totalWorkMinutes = $revisedClockIn->diffInMinutes($revisedClockOut) - $totalBreakMinutes;
+                    $attendance->update(['total_work_time'=>$totalWorkMinutes]);
+                }
+
+                DB::commit(); return redirect()->back()->with('message','修正しました。');
+            } else {
+                DB::rollBack(); return redirect()->back()->with('message','修正するデータがありません。');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack(); return redirect()->back()->with('message','修正に失敗しました。');
         }
     }
-
 
     private function isSameCarbon(?Carbon $a, ?Carbon $b): bool {
                     if($a === null && $b === null) return true;
@@ -308,7 +262,7 @@ class AdminController extends Controller
         ));
     }
 
-        public function export(Request $request) :StreamedResponse
+    public function export(Request $request) :StreamedResponse
     {
         $request->validate([
             'user_id' => ['required', 'integer'],
@@ -365,15 +319,12 @@ class AdminController extends Controller
 
         fclose($output);
     };
-
-
         $filename = "attendance_{$userId}_{$year}_{$month}.csv";
 
         return response()->streamDownload($callback, $filename, [
             'Content-Type' => 'text/csv',
         ]);
     }
-
 
     public function requestList(request $request)
     {
@@ -397,53 +348,72 @@ class AdminController extends Controller
     {
         $attendance = Attendance::with('breaks')->findOrFail($id);
 
-        $attendanceRevision = AttendanceRevision::with(['breakRevisions.break'])->where('attendance_id', $id)->first();
+        $attendanceRevision = AttendanceRevision::with(['breakRevisions.break'])
+            ->where('attendance_id', $id)
+            ->latest('id')
+            ->first();
 
-        $originalBreaks = $attendance->breaks->sortBy('display_order');
+        $originalBreaks = $attendance->breaks()->withTrashed()->get()->sortBy('display_order');
 
         $revisionsByBreakId = $attendanceRevision?->breakRevisions
             ->filter(fn($r) => $r->break_id !== null)
             ->keyBy('break_id');
 
-        $additionalRevisions = $attendanceRevision?->breakRevisions
-            ->filter(fn($r) => $r->break_id === null)
-            ->values();
-
         $mergedBreaks = [];
 
-        foreach ($originalBreaks as $break) {
-            $revision = $revisionsByBreakId[$break->id] ?? null;
+        if($attendanceRevision->status === AttendanceRevision::STATUS_APPROVED){
+            foreach ($originalBreaks as $break) {
+                $revision = $revisionsByBreakId[$break->id] ?? null;
 
-            if ($revision) {
-                $mergedBreaks[] = [
-                    'display_order' => $break->display_order,
-                    'start' => $revision->revised_break_start,
-                    'end' => $revision->revised_break_end,
-                ];
-            } else {
-                $mergedBreaks[] = [
-                    'display_order' => $break->display_order,
-                    'start' => $break->break_start,
-                    'end' => $break->break_end,
-                ];
+                if ($revision) {
+                    $mergedBreaks[] = [
+                        'display_order' => $break->display_order,
+                        'start' => $revision->revised_break_start,
+                        'end' => $revision->revised_break_end,
+                    ];
+                } else {
+                    $mergedBreaks[] = [
+                        'display_order' => $break->display_order,
+                        'start' => $break->break_start,
+                        'end' => $break->break_end,
+                    ];
+                }
             }
-        }
+        }else{
+                foreach ($originalBreaks as $break) {
+                $revision = $revisionsByBreakId[$break->id] ?? null;
 
-        $nextDisplayOrder = $originalBreaks->max('display_order') ?? 0;
-        foreach ($additionalRevisions as $revision) {
-            $nextDisplayOrder++;
-            $mergedBreaks[] = [
-                'display_order' => $nextDisplayOrder,
-                'start' => $revision->revised_break_start,
-                'end' => $revision->revised_break_end,
-            ];
+                if ($revision) {
+                    $mergedBreaks[] = [
+                        'display_order' => $break->display_order,
+                        'start' => $revision->revised_break_start,
+                        'end' => $revision->revised_break_end,
+                    ];
+                } else {
+                    $mergedBreaks[] = [
+                        'display_order' => $break->display_order,
+                        'start' => $break->break_start,
+                        'end' => $break->break_end,
+                    ];
+                }
+            }
+            $additionalRevisions = $attendanceRevision?->breakRevisions
+            ->filter(fn($r) => $r->break_id === null)
+            ->values();
+            $nextDisplayOrder = $originalBreaks->max('display_order') ?? 0;
+                foreach ($additionalRevisions as $revision) {
+                    $nextDisplayOrder++;
+                    $mergedBreaks[] = [
+                        'display_order' => $nextDisplayOrder,
+                        'start' => $revision->revised_break_start,
+                        'end' => $revision->revised_break_end,
+                    ];
+                }
         }
-
         usort($mergedBreaks, fn($a, $b) => $a['display_order'] <=> $b['display_order']);
 
         return view('admin.approve', compact('attendanceRevision', 'attendance', 'mergedBreaks'));
     }
-
     public function approved($id, Request $request)
     {
         $attendance = Attendance::with('breaks')->find($id);
@@ -474,7 +444,9 @@ class AdminController extends Controller
             $attendance->update($updateData);
         }
 
-        $revision = AttendanceRevision::where('attendance_id', $attendance->id)->first();
+        $revision = AttendanceRevision::where('attendance_id', $attendance->id)
+            ->latest('id')
+            ->first();
         $hasAttendanceUpdate = (!empty($updateData));
         $hasBreakUpdate = false;
 
@@ -564,9 +536,11 @@ class AdminController extends Controller
                 ]);
             }
 
-            $revision->update([
-                'status' => AttendanceRevision::STATUS_APPROVED,
-            ]);
+            if ($revision) {
+                $revision->update([
+                    'status' => AttendanceRevision::STATUS_APPROVED,
+                ]);
+            }
         }
         return redirect()->back()->with('message','修正申請を承認しました。');
     }

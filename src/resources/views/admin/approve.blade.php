@@ -53,6 +53,16 @@
 					</td>
 				</tr>
 				@endforeach
+				<tr class="attendance-detail__row">
+				<th class="attendance-detail__header">休憩{{ ($mergedBreaks ? max(array_column($mergedBreaks, 'display_order')) : 0) + 1 }}</th>
+				<td class="attendance-detail__data">
+					<div class="attendance-detail__time-row">
+						<span class="attendance-detail__text"></span>
+						<span class="attendance-detail__separator">～</span>
+						<span class="attendance-detail__text"></span>
+					</div>
+					</td>
+				</tr>
 				<tr class="attendance-detail__row--note">
 					<th class="attendance-detail__header">備考</th>
 					<td class="attendance-detail__data">
