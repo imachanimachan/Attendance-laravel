@@ -66,7 +66,7 @@
 							@if ($attendance)
 								<a href="{{ route('admin.show', ['id' => $attendance->id]) }}" class="attendance-list__detail-link">詳細</a>
 							@else
-								—
+								<div>詳細</div>
 							@endif
 						</td>
 					</tr>

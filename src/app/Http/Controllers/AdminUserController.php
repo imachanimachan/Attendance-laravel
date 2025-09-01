@@ -11,7 +11,7 @@ class AdminUserController extends Controller
 {
     public function listUsers()
     {
-        $users = User::all();
+        $users = User::users()->get();
         return view('admin.users', compact('users'));
     }
 
