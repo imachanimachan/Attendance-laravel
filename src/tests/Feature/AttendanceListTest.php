@@ -25,7 +25,7 @@ class AttendanceListTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $clockInTime  = now()->setDate(2025, 8, 9)->setTime(9, 0);
+        $clockInTime  = now()->setDate(2025, 9, 9)->setTime(9, 0);
         $clockOutTime = $clockInTime->copy()->setTime(18, 0);
 
         $attendance = Attendance::factory()->create([
@@ -119,7 +119,7 @@ class AttendanceListTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $clockInTime  = now()->setDate(2025, 8, 9)->setTime(9, 0);
+        $clockInTime  = now()->setDate(2025, 9, 9)->setTime(9, 0);
 
         $attendance = Attendance::factory()->create([
             'user_id'   => $user->id,
@@ -135,6 +135,6 @@ class AttendanceListTest extends TestCase
 
         $response = $this->get(route('attendance.show', $attendance->id));
         $response->assertStatus(200);
-        $response->assertSee('2025年　8月9日');
+        $response->assertSee('2025年　9月9日');
     }
 }

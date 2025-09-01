@@ -13,7 +13,7 @@
 			<a href="{{ route('admin.list', ['year' => $prevYear, 'month' => $prevMonth, 'day' => $prevDay]) }}" class="attendance-list__month-button">← 前日</a>
 			<div class="attendance-list__current-month">
 				<span class="attendance-list__calendar-icon">📅</span>
-				<span class="attendance-list__month-text">{{ $displayYear }}/{{ str_pad($displayMonth, 2, '0', STR_PAD_LEFT) }}/{{ $displayDate }}</span>
+				<span class="attendance-list__month-text">{{ $displayYear }}/{{ str_pad($displayMonth, 2, '0', STR_PAD_LEFT) }}/{{ str_pad($displayDate, 2, '0', STR_PAD_LEFT) }}</span>
 			</div>
 			<a href="{{ route('admin.list', ['year' => $nextYear, 'month' => $nextMonth, 'day' => $nextDay]) }}" class="attendance-list__month-button">翌日 →</a>
 		</div>

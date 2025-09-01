@@ -77,6 +77,15 @@ class AttendancesTableSeeder extends Seeder
                 'clock_out' => '2025-09-05 18:00:00',
                 'total_work_time' => '480',
             ],
+            [
+                'id' => 7,
+                'user_id' => $userId,
+                'status_id' => $statuses['退勤済'],
+                'date' => '2025-10-05',
+                'clock_in' => '2025-10-05 09:00:00',
+                'clock_out' => '2025-10-05 18:00:00',
+                'total_work_time' => '480',
+            ],
         ];
 
             foreach ($attendances as $attendance) {

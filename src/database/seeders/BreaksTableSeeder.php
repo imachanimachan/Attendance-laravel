@@ -85,6 +85,14 @@ class BreaksTableSeeder extends Seeder
                 'total_break_time' => '60',
                 'display_order' => 1
             ],
+            [
+                'id' => 9,
+                'attendance_id' => 7,
+                'break_start' => '2025-10-05 12:00:00',
+                'break_end' => '2025-10-05 13:00:00',
+                'total_break_time' => '60',
+                'display_order' => 1
+            ],
         ];
 
             foreach ($breaks as $break) {

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->datetime('break_start');
             $table->datetime('break_end')->nullable();
             $table->integer('total_break_time')->nullable();
-            $table->unsignedTinyInteger('display_order')->nullable();
+            $table->unsignedTinyInteger('display_order');
             $table->softDeletes();
             $table->timestamps();
         });
