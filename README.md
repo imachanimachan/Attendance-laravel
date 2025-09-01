@@ -44,15 +44,22 @@ php artisan db:seed
 
 ``` bash
 1．ユーザー情報
+
+    ＜一般ユーザー＞
     name：Test User
     email：test@example.com
     password：test1234
 
+    ＜管理者ユーザー＞
     name：Admin User
     email：admin@example.com
     password：admin1234
 
+
 1．勤怠記録情報
+
+以下のような勤怠レコードが複数件作成されます（一部抜粋）
+
     出勤：2025-09-05 09:00:00
     休憩入り：2025-09-05 12:00:00
     休憩終わり：2025-09-05 13:00:00
