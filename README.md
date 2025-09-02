@@ -120,8 +120,8 @@ DB_CONNECTION=mysql
 DB_HOST=mysql
 DB_PORT=3306
 DB_DATABASE=demo_test
-DB_USERNAME=yourname
-DB_PASSWORD=yourpass
+DB_USERNAME=root
+DB_PASSWORD=root
 ```
 
 3. テスト用のアプリケーションキーを生成（初回のみ）
@@ -150,3 +150,14 @@ php artisan test
 ## URL
 - 開発環境：http://localhost/
 - phpMyAdmin：http://localhost:8080/
+
+### パーミッションエラーについて
+Linux 環境で Docker を使用している場合、アクセス時に以下のようなエラーが出ることがあります。
+
+Permission denied
+
+その場合は、開発用の一時的な対応として以下のコマンドを実行してください。
+```
+sudo chmod -R 777 src/*
+```
+
